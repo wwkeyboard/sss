@@ -4,8 +4,10 @@ var assert = require('assert'),
 
 describe('Parser', function() {
   it('parse empty rules', function () {
-    assert.deepEqual(parser.parse("h1 {}\n" +
-                                  "p {}"),
+    assert.deepEqual(parser.parse(heredoc(function(){/*
+h1 {}
+p {}
+*/})),
       new nodes.StyleSheet([
         new nodes.Rule('h1', []),
         new nodes.Rule('p', [])
@@ -23,10 +25,12 @@ describe('Parser', function() {
   })
 
   it('parse nested rules', function () {
-    assert.deepEqual(parser.parse("h1 {\n" +
-                                  "  p { }\n" +
-                                  "  a { }\n" +
-                                  "}"),
+    assert.deepEqual(parser.parse(heredoc(function(){/*
+h1 {
+  p { }
+  a { }
+}
+*/})),
       new nodes.StyleSheet([
         new nodes.Rule('h1', [
           new nodes.Rule('p', []),
@@ -36,12 +40,14 @@ describe('Parser', function() {
   })
 
   it('parse nested rules with properties', function () {
-    assert.deepEqual(parser.parse("h1 {\n" +
-                                  "  font-size: 10px;\n" +
-                                  "  p { }\n" +
-                                  "  font-size: 10px;\n" +
-                                  "  p { }\n" +
-                                  "}"),
+    assert.deepEqual(parser.parse(heredoc(function(){/*
+h1 {
+  font-size: 10px;
+  p { }
+  font-size: 10px;
+  p { }
+}
+*/ })),
       new nodes.StyleSheet([
         new nodes.Rule('h1', [
           new nodes.Property('font-size', [ new nodes.Literal('10px') ]),
@@ -124,4 +130,9 @@ describe('Parser', function() {
       assert.equal(actual, selector)
     })
   }
+
+  // http://stackoverflow.com/questions/4376431/javascript-heredoc
+  function heredoc(f) {
+    return f.toString().match(/\/\*\s*([\s\S]*?)\s*\*\//m)[1];
+  };
 })

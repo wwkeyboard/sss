@@ -3,8 +3,11 @@ var assert = require('assert'),
 
 describe('Compilation to CSS', function() {
   it('compiles empty rule', function () {
-    var code = "h1 {  }\n" +
-               "p {  }"
+    var code = heredoc(function(){/*
+h1 {  }
+p {  }
+*/})
+
     assert.equal(parser.parse(code).toCSS(), code)
   })
 
@@ -14,25 +17,37 @@ describe('Compilation to CSS', function() {
   })
 
   it('compiles nested rules', function () {
-    var code = "h1 {\n" +
-               "  p { font-size: 10px; }\n" +
-               "}"
+      var code = heredoc(function(){/*
+h1 {
+  p { font-size: 10px; }
+}
+*/});
 
-    assert.equal(parser.parse(code).toCSS(),
-                 "h1 {  }\n" +
-                 "h1 p { font-size: 10px; }")
+    assert.equal(parser.parse(code).toCSS(), heredoc(function() {/*
+h1 {  }
+h1 p { font-size: 10px; }
+*/}));
   })
 
   it('compiles variables', function() {
     assert.equal(parser.parse("p { @a: 10px; width: @a; }").toCSS(),
                               "p { width: 10px; }")
   })
-  
+
   it('compiles variables from parent scopes', function() {
-    var code = "@a: 10px;\n" +
-               "p { width: @a; }"
-               
+    var code = heredoc(function(){/*
+@a: 10px;
+p { width: @a; }
+*/})
+
     assert.equal(parser.parse(code).toCSS(),
                               "p { width: 10px; }")
   })
+
+  // Helpers
+
+  // http://stackoverflow.com/questions/4376431/javascript-heredoc
+  function heredoc(f) {
+    return f.toString().match(/\/\*\s*([\s\S]*?)\s*\*\//m)[1];
+  };
 })
